@@ -1,0 +1,37 @@
+habits = [
+    {"name": "Read Book", "status": "Not Done"},
+    {"name": "Drink Water", "status": "Not Done"}
+]
+def show_habits():
+    print("--- MY HABITS ---")
+    for i in range(len(habits)):
+        print(f"{i + 1}. {habits[i]['name']} [{habits[i]['status']}]")
+
+def add_habit():
+    user_input = input("Enter the name of the new habit: ")
+    new_item = {"name": user_input, "status": "Not Done"}
+    habits.append(new_item)
+    print(f"'{user_input}' was added successfully!")
+
+def complete_habit():
+    show_habits()
+    choice_num = int(input("Enter the number of the habit you completed: "))
+    index = choice_num - 1 
+    habits[index]["status"] = "Done"
+    print(f"Great job! '{habits[index]['name']}' is marked as Done!")
+
+while True:
+    print("1. View Habits | 2. Add Habit | 3. Complete Habit | 4. Exit")
+    choice = input("Choose an option (1-4): ")
+    
+    if choice == "1":
+        show_habits()
+    elif choice == "2":
+        add_habit()
+    elif choice == "3":
+        complete_habit()
+    elif choice == "4":
+        print("Keep up the good work! Goodbye!")
+        break
+    else:
+        print("Invalid choice. Please try again.")
