@@ -1,0 +1,97 @@
+import streamlit as st
+
+if 'users' not in st.session_state:
+    # users[username] = {"password": str, "habits": [str, ...], "done_today": set(str)}
+    st.session_state['users'] = {}
+
+if 'current_user' not in st.session_state:
+    st.session_state['current_user'] = None
+
+st.title("🎯 Habit Tracker PRO")
+
+if st.session_state['current_user'] is None:
+    st.subheader("🔒 Παρακαλώ συνδεθείτε ή φτιάξτε λογαριασμό για να συνεχίσετε.")
+
+    user_input = st.text_input("Username:")
+    pass_input = st.text_input("Password:", type="password")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Register New Account"):
+            if user_input == "" or pass_input == "":
+                st.error("❌ Παρακαλώ γράψε Username και Password!")
+            elif user_input in st.session_state['users']:
+                st.error("❌ This username already exists. Please log in instead.")
+            else:
+                st.session_state['users'][user_input] = {
+                    "password": pass_input,
+                    "habits": [],
+                    "done_today": set(),
+                }
+                st.success(f"✅ Account successfully created for: {user_input}!")
+
+    with col2:
+        if st.button("Login"):
+            user_record = st.session_state['users'].get(user_input)
+            if user_record is None:
+                st.error("❌ User not found. Please register first!")
+            elif user_record["password"] != pass_input:
+                st.error("❌ Incorrect password.")
+            else:
+                st.session_state['current_user'] = user_input
+                st.rerun()
+
+else:
+    current_user = st.session_state['current_user']
+    user_record = st.session_state['users'][current_user]
+
+    page = st.sidebar.selectbox("Μενού", ["My Habits", "Progress Dashboard"])
+    st.sidebar.write(f"👤 User: {current_user}")
+    if st.sidebar.button("Log out"):
+        st.session_state['current_user'] = None
+        st.rerun()
+
+    if page == "My Habits":
+        st.title("➕ My Habits")
+
+        new_habit = st.text_input("Add a new habit:")
+
+        if st.button("Add a habit"):
+            if new_habit == "":
+                st.error("❌ Please write a habit name first!")
+            elif new_habit in user_record["habits"]:
+                st.error("❌ That habit already exists.")
+            else:
+                user_record["habits"].append(new_habit)
+                st.success(f"✅ '{new_habit}' added successfully!")
+
+        st.subheader("📋 Your Current Habits:")
+        if not user_record["habits"]:
+            st.write("You haven't added any habits yet.")
+        else:
+            for habit in user_record["habits"]:
+                done = habit in user_record["done_today"]
+                checked = st.checkbox(
+                    f"📌 {habit}", value=done, key=f"habit_{habit}"
+                )
+                if checked and not done:
+                    user_record["done_today"].add(habit)
+                elif not checked and done:
+                    user_record["done_today"].discard(habit)
+
+    elif page == "Progress Dashboard":
+        st.title("📊 Progress Dashboard")
+
+        habits = user_record["habits"]
+        total_habits = len(habits)
+        done_today = len(user_record["done_today"])
+
+        st.write(f"📈 You are currently tracking **{total_habits}** habits!")
+
+        if total_habits > 0:
+            completion = done_today / total_habits
+            st.write(f"✅ Completed today: **{done_today} / {total_habits}**")
+            st.progress(completion)
+        else:
+            st.write("Add some habits first to see your progress here.")
