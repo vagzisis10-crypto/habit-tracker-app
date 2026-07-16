@@ -1,0 +1,58 @@
+import streamlit as st
+
+if 'users' not in st.session_state:
+    st.session_state['users'] = {}
+
+if 'current_user' not in st.session_state:
+    st.session_state['current_user'] = None 
+
+st.title("🎯 Habit Tracker PRO")
+
+if st.session_state['current_user'] is None:
+    st.subheader("🔒 Παρακαλώ συνδεθείτε ή φτιάξτε λογαριασμό για να συνεχίσετε.")
+    
+    user_input = st.text_input("Username:")
+    pass_input = st.text_input("Password:", type="password")
+
+    if st.button("Register New Account"):
+        if user_input == "":
+            st.write("❌ Παρακαλώ γράψε ένα Username!")
+        else:
+            st.session_state['users'][user_input] = []
+            st.write(f"✅ Account successfully created for: {user_input}!")
+
+    if st.button("Login"):
+        if user_input in st.session_state['users']:
+            st.session_state['current_user'] = user_input
+            st.write(f"👋 Welcome back, {user_input}!")
+        else:
+            st.write("❌ User not found. Please register first!")
+
+else:
+    page = st.sidebar.selectbox("Μενού", ["My Habits", "Progress Dashboard"])
+    st.sidebar.write(f"👤 User: {st.session_state['current_user']}")
+
+    if page == "My Habits":
+        st.title("➕ My Habits")
+        
+        new_habit = st.text_input("Add a new habit:")
+        
+        if st.button("Add a habit"):
+            if new_habit != "":
+                st.session_state['users'][st.session_state['current_user']].append(new_habit)
+                st.write(f"✅ '{new_habit}' added successfully!")
+            else:
+                st.write("❌ Please write a habit name first!")
+        
+        st.subheader("📋 Your Current Habits:")
+        user_habits = st.session_state['users'][st.session_state['current_user']]
+        for habit in user_habits:
+            st.write(f"📌 {habit}")
+            
+    elif page == "Progress Dashboard":
+        st.title("📊 Progress Dashboard")
+        
+        user_habits = st.session_state['users'][st.session_state['current_user']]
+        total_habits = len(user_habits)
+        
+        st.write(f"📈 You are currently tracking **{total_habits}** habits!")
